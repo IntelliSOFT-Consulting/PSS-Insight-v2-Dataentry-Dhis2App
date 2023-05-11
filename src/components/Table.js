@@ -11,6 +11,7 @@ import {
   CenteredContent,
 } from '@dhis2/ui';
 import { createUseStyles } from 'react-jss';
+import TableHeader from './TableHeader';
 
 const useStyles = createUseStyles({
   tableHeader: props => ({
@@ -133,16 +134,7 @@ const Table = ({
         <TableHead>
           <DataTableRow>
             {columns.map((column, index) => (
-              <DataTableColumnHeader
-                key={index}
-                className={`${classes.tableHeader} ${
-                  column.hidden ? classes.hidden : ''
-                }`}
-                width={column.width || 'auto'}
-                colSpan={column.headerSpan || 'auto'}
-              >
-                {column.name}
-              </DataTableColumnHeader>
+              <TableHeader key={index} column={column} index={index} />
             ))}
           </DataTableRow>
         </TableHead>

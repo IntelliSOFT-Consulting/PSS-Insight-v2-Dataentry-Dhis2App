@@ -19,6 +19,16 @@ const useStyles = createUseStyles({
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
+    '& > div': {
+      display: 'flex',
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: '100%',
+      '& > label': {
+        margin: '0px 10px !important',
+      },
+    },
   },
   ghost: ({ ghost }) =>
     ghost
@@ -60,8 +70,6 @@ export default function FormInput({
     { label: 'No', value: false },
   ];
 
-
-  console.log(value)
   return (
     <>
       {type === 'NUMBER' && (
@@ -71,11 +79,13 @@ export default function FormInput({
           )}
           <Input
             type='number'
+            autoComplete='off'
             name={rest.name}
             value={value}
             onChange={onChange}
             error={rest.error}
             placeholder={rest.placeholder || 'Enter Number'}
+            disabled={rest.disabled}
           />
         </Field>
       )}
@@ -86,11 +96,13 @@ export default function FormInput({
           )}
           <Input
             type='text'
+            autoComplete='off'
             name={rest.name}
             value={value}
             onChange={onChange}
             error={rest.error}
             placeholder={rest.placeholder}
+            disabled={rest.disabled}
           />
         </Field>
       )}
@@ -101,10 +113,12 @@ export default function FormInput({
           )}
           <TextArea
             name={rest.name}
+            autoComplete='off'
             value={value}
             onChange={onChange}
             error={rest.error}
             placeholder={rest.placeholder}
+            disabled={rest.disabled}
           />
         </Field>
       )}
@@ -121,6 +135,7 @@ export default function FormInput({
               value={option.value}
               checked={value === option.value}
               onChange={onChange}
+              disabled={rest.disabled}
             />
           ))}
         </Field>
@@ -135,12 +150,14 @@ export default function FormInput({
             selected={value}
             onChange={onChange}
             error={rest.error}
+            disabled={rest.disabled}
           >
             {options.map(option => (
               <SingleSelectOption
                 key={option.value}
                 label={option.label}
                 value={option.value}
+                disabled={rest.disabled}
               />
             ))}
           </SingleSelect>
@@ -155,6 +172,7 @@ export default function FormInput({
             error={rest.error}
             className={styles.ghost}
             buttonLabel={rest.description}
+            disabled={rest.disabled}
           />
         </Field>
       )}

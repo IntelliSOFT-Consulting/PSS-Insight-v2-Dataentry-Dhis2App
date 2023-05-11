@@ -4,19 +4,9 @@ import { Menu, MenuItem } from '@dhis2/ui';
 import classes from '../App.module.css';
 import Surveys from '../Pages/Surveys';
 import NewResponse from '../Pages/NewResponse';
-import { getOrgUnits } from '../api/api';
+import { getOrgUnit } from '../api/api';
 
 export default function Layout({ user }) {
-  const [orgUnits, setOrgUnits] = React.useState([]);
-  const [currentOrgUnit, setCurrentOrgUnit] = React.useState(null);
-
-  React.useEffect(() => {
-    getOrgUnits(user).then(res => {
-      setOrgUnits(res?.details);
-      setCurrentOrgUnit(res?.details[0]);
-    });
-  }, [user]);
-
   return (
     <main
       style={{
@@ -64,17 +54,9 @@ export default function Layout({ user }) {
           >
             Organization Unit
           </p>
-          {orgUnits.map(orgUnit => (
-            <div
-              key={orgUnit.displayName}
-              onClick={() => setCurrentOrgUnit(orgUnit)}
-              className={
-                currentOrgUnit?.displayName === orgUnit.displayName
-                  ? classes.active
-                  : ''
-              }
-            >
-              <MenuItem label={orgUnit.displayName} />
+          {user?.me?.organisationUnits?.map(orgUnit => (
+            <div key={orgUnit.name} className={classes.active}>
+              <MenuItem label={orgUnit.name} />
             </div>
           ))}
         </Menu>
@@ -88,10 +70,7 @@ export default function Layout({ user }) {
       >
         <Routes>
           <Route path='/' element={<Surveys user={user} />} />
-          <Route
-            path='/create'
-            element={<NewResponse user={user} orgUnit={currentOrgUnit} />}
-          />
+          <Route path='/create' element={<NewResponse user={user} />} />
           <Route path='/view/:id' element={<NewResponse user={user} />} />
           <Route path='/edit/:id' element={<NewResponse user={user} />} />
           <Route path='/*' element={<Surveys user={user} />} />

@@ -21,7 +21,6 @@ const useStyles = createUseStyles({
       },
       '& .ant-modal-header': {
         backgroundColor: ({ type }) => {
-          console.log('type', type);
           switch (type) {
             case 'info':
               return '#0067b9 !important';

@@ -1,14 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { getResponses } from '../api/api';
 import { createUseStyles } from 'react-jss';
 import Card from '../components/Card';
 import { format } from 'date-fns';
-import Table from '../components/Table';
-import { Popconfirm, Button } from 'antd';
+import { Popconfirm, Button, Table } from 'antd';
 import { Link } from 'react-router-dom';
 import { TabBar, Tab } from '@dhis2/ui';
 import Empty from '../components/Empty';
 import Notification from '../components/Notification';
+import { SearchOutlined } from '@ant-design/icons';
 
 const useStyles = createUseStyles({
   actions: {
@@ -19,6 +19,14 @@ const useStyles = createUseStyles({
       textDecoration: 'underline',
       margin: '0 3px',
       padding: 0,
+    },
+    '& > a': {
+      textDecoration: 'none',
+    },
+    '& > a:not(:first-child)::before': {
+      content: '" | "',
+      textDecoration: 'none !important',
+      color: '#005a8e',
     },
   },
   edit: {
@@ -34,6 +42,7 @@ export default function Surveys({ user }) {
   const [deleted, setDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+    const [searchText, setSearchText] = useState('');
 
   const classes = useStyles();
 
@@ -52,26 +61,147 @@ export default function Surveys({ user }) {
     getVersons();
   }, [deleted]);
 
+  const searchInput = useRef(null);
+  const handleSearch = (selectedKeys, confirm, dataIndex) => {
+    confirm();
+    setSearchText(selectedKeys[0]);
+    setSearchedColumn(dataIndex);
+  };
+  const handleReset = clearFilters => {
+    clearFilters();
+    setSearchText('');
+  };
+  const getColumnSearchProps = dataIndex => ({
+    filterDropdown: ({
+      setSelectedKeys,
+      selectedKeys,
+      confirm,
+      clearFilters,
+      close,
+    }) => (
+      <div
+        style={{
+          padding: 8,
+        }}
+        onKeyDown={e => e.stopPropagation()}
+      >
+        <Input
+          ref={searchInput}
+          placeholder={`Search ${dataIndex}`}
+          value={selectedKeys[0]}
+          onChange={e =>
+            setSelectedKeys(e.target.value ? [e.target.value] : [])
+          }
+          onPressEnter={() => handleSearch(selectedKeys, confirm, dataIndex)}
+          style={{
+            marginBottom: 8,
+            display: 'block',
+          }}
+        />
+        <Space>
+          <Button
+            type='primary'
+            onClick={() => handleSearch(selectedKeys, confirm, dataIndex)}
+            icon={<SearchOutlined />}
+            size='small'
+            style={{
+              width: 90,
+            }}
+          >
+            Search
+          </Button>
+          <Button
+            onClick={() => clearFilters && handleReset(clearFilters)}
+            size='small'
+            style={{
+              width: 90,
+            }}
+          >
+            Reset
+          </Button>
+          <Button
+            type='link'
+            size='small'
+            onClick={() => {
+              confirm({
+                closeDropdown: false,
+              });
+              setSearchText(selectedKeys[0]);
+              setSearchedColumn(dataIndex);
+            }}
+          >
+            Filter
+          </Button>
+          <Button
+            type='link'
+            size='small'
+            onClick={() => {
+              close();
+            }}
+          >
+            close
+          </Button>
+        </Space>
+      </div>
+    ),
+    filterIcon: filtered => (
+      <SearchOutlined
+        style={{
+          color: filtered ? '#1890ff' : undefined,
+        }}
+      />
+    ),
+    onFilter: (value, record) =>
+      record[dataIndex].toString().toLowerCase().includes(value.toLowerCase()),
+    onFilterDropdownOpenChange: visible => {
+      if (visible) {
+        setTimeout(() => searchInput.current?.select(), 100);
+      }
+    },
+    render: text =>
+      searchedColumn === dataIndex ? (
+        <Highlighter
+          highlightStyle={{
+            backgroundColor: '#ffc069',
+            padding: 0,
+          }}
+          searchWords={[searchText]}
+          autoEscape
+          textToHighlight={text ? text.toString() : ''}
+        />
+      ) : (
+        text
+      ),
+  });
+
   const columns = [
     {
-      name: 'DATE CREATED',
+      title: 'DATE CREATED',
+      dataIndex: 'createdAt',
       key: 'createdAt',
-      render: row =>
+      render: (_, row) =>
         row.createdAt && format(new Date(row.createdAt), 'dd/MM/yyyy'),
     },
     {
-      name: 'STATUS',
+      title: 'STATUS',
+      dataIndex: 'status',
       key: 'status',
     },
     {
-      name: 'ACTIONS',
+      title: 'ACTIONS',
+      dataIndex: 'actions',
       key: 'actions',
-      render(row) {
+      render(_, row) {
         return (
           <div className={classes.actions}>
             <Link to={`/view/${row.id}`}>
               <button className={classes.edit}>View</button>
             </Link>
+            {row.status === 'DRAFT' && (
+              <Link to={`/edit/${row.id}`}>
+                <button className={classes.edit}>Edit</button>
+              </Link>
+            )}
           </div>
         );
       },
@@ -93,16 +223,14 @@ export default function Surveys({ user }) {
       <div style={{ margin: '1rem 0px' }}>
         <Table
           columns={columns}
-          tableData={versions}
+          dataSource={versions}
           loading={loading}
-          emptyMessage={<Empty message='No submissions found' />}
-          pageSize={10}
+          size='small'
+          locale={{
+            emptyText: <Empty message='No submissions yet' />,
+          }}
           bordered
-          total={versions?.length}
-          pagination={versions?.length > 10}
-          hidePageSizeSelect
-          hidePageSummary
-          hidePageSelect
+          pagination={versions.length > 15 ? { pageSize: 15 } : false}
         />
       </div>
     </Card>

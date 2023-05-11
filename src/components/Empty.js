@@ -1,6 +1,5 @@
 import React from 'react';
 import { createUseStyles } from 'react-jss';
-import Card from './Card';
 import { Link } from 'react-router-dom';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 

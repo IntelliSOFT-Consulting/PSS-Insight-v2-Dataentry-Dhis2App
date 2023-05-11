@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
-import {
-  Field,
-  Input,
-  TextArea,
-  AlertBar,
-  SingleSelectField,
-  SingleSelectOption,
-} from '@dhis2/ui';
+import { AlertBar } from '@dhis2/ui';
 import { Select, Button } from 'antd';
-import { saveResponse, getSurvey, getResponseDetails } from '../api/api';
+import {
+  saveResponse,
+  getSurvey,
+  getResponseDetails,
+  updateResponse,
+} from '../api/api';
 import classes from '../App.module.css';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
@@ -18,8 +16,8 @@ import Accordion from '../components/Accordion';
 import Loading from '../components/Loader';
 import { createUseStyles } from 'react-jss';
 import { useParams, useNavigate } from 'react-router-dom';
-import FormItem from 'antd/es/form/FormItem';
-import { groupQuestions, loadData, transformSubmissions } from '../lib/utils';
+import { groupQuestions } from '../lib/utils';
+import Notification from '../components/Notification';
 
 const { Option } = Select;
 
@@ -44,37 +42,37 @@ const validationSchema = Yup.object({
   selectedPeriod: Yup.string().required('Select a period'),
 });
 
-export default function NewResponse({ user, orgUnit }) {
+export default function NewResponse({ user }) {
   const [loadingSurvey, setLoadingSurvey] = useState(true);
   const [survey, setSurvey] = useState([]);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [fileNames, setFileNames] = useState({});
+  const [referenceSheet, setReferenceSheet] = useState('');
+  const [responses, setResponses] = useState([]);
 
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const isView = window.location.href.includes('view');
-
   const formik = useFormik({
     initialValues: {
       isPublished: false,
-      selectedPeriod: '',
+      selectedPeriod: null,
     },
     validationSchema,
     onSubmit: async values => {
       try {
-        const responses = transformSubmissions(values);
         const data = {
-          ...responses,
-          orgUnit: orgUnit?.id,
+          orgUnit: user?.me?.organisationUnits[0]?.id,
           selectedPeriod: values.selectedPeriod,
           dataEntryPersonId: user?.me?.id,
           dataEntryDate: new Date(),
+          responses,
+          isPublished: values.isPublished,
         };
         let response;
         if (id) {
-          //   response = await updateVersion(id, data);
+          response = await updateResponse(id, data);
         } else {
           response = await saveResponse(data);
         }
@@ -93,19 +91,37 @@ export default function NewResponse({ user, orgUnit }) {
     },
   });
 
+  const isView =
+    loadingSurvey ||
+    window.location.href.includes('view') ||
+    formik.values.isPublished;
   const loadResponse = async () => {
     try {
       setLoadingSurvey(true);
       const response = await getResponseDetails(id);
-      const groupedData = loadData(response);
-      formik.values = groupedData;
+      const groupedData = groupQuestions(response?.indicators?.details);
+      setReferenceSheet(response?.referenceSheet);
+      setSurvey(groupedData);
+      setLoadingSurvey(false);
+      const formatResponses = response?.responses?.map(item => ({
+        ...item,
+        response:
+          item.response === 'true'
+            ? true
+            : item.response === 'false'
+            ? false
+            : item.response,
+      }));
+      setResponses(formatResponses);
+      formik.setFieldValue('selectedPeriod', response?.selectedPeriod);
+      formik.setFieldValue('dataEntryDate', response?.dataEntryDate);
+      formik.setFieldValue('isPublished', response?.status === 'PUBLISHED');
     } catch (error) {
       setError('Error loading response');
     } finally {
       setLoadingSurvey(false);
     }
   };
-
   useEffect(() => {
     if (id) {
       loadResponse();
@@ -114,9 +130,12 @@ export default function NewResponse({ user, orgUnit }) {
 
   const loadSurvey = async () => {
     try {
+      formik.resetForm();
+      setResponses([]);
       setLoadingSurvey(true);
       const response = await getSurvey();
       const groupedData = groupQuestions(response?.details);
+      setReferenceSheet(response?.referenceSheet);
       setSurvey(groupedData);
       setLoadingSurvey(false);
     } catch (error) {
@@ -126,8 +145,10 @@ export default function NewResponse({ user, orgUnit }) {
   };
 
   useEffect(() => {
-    loadSurvey();
-  }, []);
+    if (!id) {
+      loadSurvey();
+    }
+  }, [id]);
 
   const styles = useStyles();
 
@@ -154,7 +175,11 @@ export default function NewResponse({ user, orgUnit }) {
     <div className={classes.cardFooter}>
       <Button
         name='Small button'
-        onClick={formik.handleReset}
+        onClick={() => {
+          formik.handleReset();
+          setResponses([]);
+          navigate('/');
+        }}
         small
         value='default'
         className={classes.btnCancel}
@@ -193,26 +218,20 @@ export default function NewResponse({ user, orgUnit }) {
   return (
     <Card title='DATA ENTRY' footer={isView ? null : footer}>
       {success && (
-        <AlertBar
-          duration={3000}
-          icon
-          success
-          onHidden={() => setSuccess(false)}
-          className={styles.alertBar}
-        >
-          {success}
-        </AlertBar>
+        <Notification
+          status='success'
+          title='Success'
+          message={success}
+          onClose={() => setSuccess(false)}
+        />
       )}
       {error && (
-        <AlertBar
-          duration={3000}
-          icon
-          critical
-          onHidden={() => setError(false)}
-          className={styles.alertBar}
-        >
-          {error}
-        </AlertBar>
+        <Notification
+          status='error'
+          title='Error'
+          message={error}
+          onClose={() => setError(false)}
+        />
       )}
       <form className={classes.formGrid}>
         <div className={styles.formItem}>
@@ -221,6 +240,7 @@ export default function NewResponse({ user, orgUnit }) {
             placeholder='Select year'
             label='Period'
             options={years}
+            disabled={isView}
             style={{ width: '100%' }}
             value={formik.values.selectedPeriod}
             onChange={value => formik.setFieldValue('selectedPeriod', value)}
@@ -257,6 +277,9 @@ export default function NewResponse({ user, orgUnit }) {
                     formik={formik}
                     fileNames={fileNames}
                     setFileNames={setFileNames}
+                    referenceSheet={referenceSheet}
+                    responses={responses}
+                    setResponses={setResponses}
                   />
                 ))}
               </Accordion>

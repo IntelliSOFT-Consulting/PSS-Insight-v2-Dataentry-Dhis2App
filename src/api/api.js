@@ -14,7 +14,7 @@ export const getResponses = async params => {
   return data;
 };
 
-export const getOrgUnits = async () => {
+export const getOrgUnit = async () => {
   const { data } = await api.get('/national-template/organisation-units');
   return data;
 };
@@ -36,3 +36,8 @@ export const attachFile = async file => {
   );
   return data;
 };
+
+export const updateResponse= async (id, data) => {
+  const { data: response } = await api.put(`/data-entry/response/${id}`, data);
+  return response;
+}
