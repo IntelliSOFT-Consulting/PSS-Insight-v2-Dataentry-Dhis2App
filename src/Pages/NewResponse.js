@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
-import { AlertBar } from '@dhis2/ui';
 import { Select, Button } from 'antd';
 import {
   saveResponse,
@@ -18,8 +17,6 @@ import { createUseStyles } from 'react-jss';
 import { useParams, useNavigate } from 'react-router-dom';
 import { groupQuestions } from '../lib/utils';
 import Notification from '../components/Notification';
-
-const { Option } = Select;
 
 const useStyles = createUseStyles({
   alertBar: {
@@ -69,6 +66,13 @@ export default function NewResponse({ user }) {
           dataEntryDate: new Date(),
           responses,
           isPublished: values.isPublished,
+          dataEntryPerson: {
+            id: user?.me?.id,
+            username: user?.me?.username,
+            firstName: user?.me?.firstName,
+            surname: user?.me?.surname,
+            email: user?.me?.email,
+          },
         };
         let response;
         if (id) {
@@ -94,7 +98,7 @@ export default function NewResponse({ user }) {
   const isView =
     loadingSurvey ||
     window.location.href.includes('view') ||
-    formik.values.isPublished;
+    (id && formik.values.isPublished);
   const loadResponse = async () => {
     try {
       setLoadingSurvey(true);
@@ -171,6 +175,13 @@ export default function NewResponse({ user }) {
     }
   }, [success]);
 
+  useEffect(() => {
+    if (formik.errors.selectedPeriod && formik.touched.selectedPeriod) {
+      const component = document.getElementById('selectedPeriod');
+      component.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [formik.errors.selectedPeriod, formik.touched.selectedPeriod]);
+
   const footer = (
     <div className={classes.cardFooter}>
       <Button
@@ -239,6 +250,7 @@ export default function NewResponse({ user }) {
             name='selectedPeriod'
             placeholder='Select year'
             label='Period'
+            id='selectedPeriod'
             options={years}
             disabled={isView}
             style={{ width: '100%' }}

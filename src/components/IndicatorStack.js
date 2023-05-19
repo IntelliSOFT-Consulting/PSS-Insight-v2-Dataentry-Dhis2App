@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { createUseStyles } from 'react-jss';
-import { Table, Checkbox } from 'antd';
+import { Table, Checkbox, Tooltip } from 'antd';
 import { ExclamationCircleIcon } from '@heroicons/react/24/solid';
 import InfoModal from './InfoModal';
 import FormInput from './FormDef';
@@ -264,6 +264,17 @@ export default function IndicatorStack({
                 Fill Assessment Question
               </Checkbox>
             </div>
+          );
+        }
+        if (index === 0) {
+          return (
+            <Tooltip
+              title={
+                "To answer this indicator question, please make sure that the 'Fill Assessment Question' option is unchecked."
+              }
+            >
+              {row?.name}
+            </Tooltip>
           );
         }
         return row?.name;

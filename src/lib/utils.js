@@ -1,3 +1,7 @@
+String.prototype.capitalize = function () {
+  return this.charAt(0).toUpperCase() + this.toLowerCase().slice(1);
+};
+
 export const groupQuestions = data => {
   const categories = data.map(category => category.categoryName);
   const uniqueCategories = [...new Set(categories)];

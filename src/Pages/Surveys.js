@@ -3,12 +3,14 @@ import { getResponses } from '../api/api';
 import { createUseStyles } from 'react-jss';
 import Card from '../components/Card';
 import { format } from 'date-fns';
-import { Popconfirm, Button, Table } from 'antd';
+import { Input, Space, Button, Table } from 'antd';
 import { Link } from 'react-router-dom';
 import { TabBar, Tab } from '@dhis2/ui';
 import Empty from '../components/Empty';
 import Notification from '../components/Notification';
-import { SearchOutlined } from '@ant-design/icons';
+import { SearchOutlined, MailOutlined } from '@ant-design/icons';
+import Highlighter from 'react-highlight-words';
+import ModalItem from '../components/Modal';
 
 const useStyles = createUseStyles({
   actions: {
@@ -35,6 +37,22 @@ const useStyles = createUseStyles({
   delete: {
     color: '#f44336',
   },
+  flex: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  icon: {
+    border: '2px solid #005a8e',
+    borderRadius: '50%',
+    width: 25,
+    height: 25,
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    fontWeight: 'bold',
+    cursor: 'pointer',
+  },
 });
 
 export default function Surveys({ user }) {
@@ -42,7 +60,9 @@ export default function Surveys({ user }) {
   const [deleted, setDeleted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-    const [searchText, setSearchText] = useState('');
+  const [searchText, setSearchText] = useState('');
+  const [searchedColumn, setSearchedColumn] = useState('');
+  const [comment, setComment] = useState('');
 
   const classes = useStyles();
 
@@ -67,17 +87,18 @@ export default function Surveys({ user }) {
     setSearchText(selectedKeys[0]);
     setSearchedColumn(dataIndex);
   };
-  const handleReset = clearFilters => {
+  const handleReset = (clearFilters, confirm) => {
     clearFilters();
     setSearchText('');
+    confirm();
   };
+
   const getColumnSearchProps = dataIndex => ({
     filterDropdown: ({
       setSelectedKeys,
       selectedKeys,
       confirm,
       clearFilters,
-      close,
     }) => (
       <div
         style={{
@@ -111,35 +132,13 @@ export default function Surveys({ user }) {
             Search
           </Button>
           <Button
-            onClick={() => clearFilters && handleReset(clearFilters)}
+            onClick={() => clearFilters && handleReset(clearFilters, confirm)}
             size='small'
             style={{
               width: 90,
             }}
           >
             Reset
-          </Button>
-          <Button
-            type='link'
-            size='small'
-            onClick={() => {
-              confirm({
-                closeDropdown: false,
-              });
-              setSearchText(selectedKeys[0]);
-              setSearchedColumn(dataIndex);
-            }}
-          >
-            Filter
-          </Button>
-          <Button
-            type='link'
-            size='small'
-            onClick={() => {
-              close();
-            }}
-          >
-            close
           </Button>
         </Space>
       </div>
@@ -179,6 +178,9 @@ export default function Surveys({ user }) {
       title: 'DATE CREATED',
       dataIndex: 'createdAt',
       key: 'createdAt',
+      sorter: (a, b) => new Date(a.createdAt) - new Date(b.createdAt),
+      sortDirections: ['descend', 'ascend'],
+      ...getColumnSearchProps('createdAt'),
       render: (_, row) =>
         row.createdAt && format(new Date(row.createdAt), 'dd/MM/yyyy'),
     },
@@ -186,6 +188,10 @@ export default function Surveys({ user }) {
       title: 'STATUS',
       dataIndex: 'status',
       key: 'status',
+      ...getColumnSearchProps('status'),
+      sorter: (a, b) => a.status.length - b.status.length,
+      sortDirections: ['descend', 'ascend'],
+      render: (_, row) => row.status?.capitalize(),
     },
     {
       title: 'ACTIONS',
@@ -193,14 +199,24 @@ export default function Surveys({ user }) {
       key: 'actions',
       render(_, row) {
         return (
-          <div className={classes.actions}>
-            <Link to={`/view/${row.id}`}>
-              <button className={classes.edit}>View</button>
-            </Link>
-            {row.status === 'DRAFT' && (
-              <Link to={`/edit/${row.id}`}>
-                <button className={classes.edit}>Edit</button>
+          <div className={classes.flex}>
+            <div className={classes.actions}>
+              <Link to={`/view/${row.id}`}>
+                <button className={classes.edit}>View</button>
               </Link>
+              {row.status === 'DRAFT' && (
+                <Link to={`/edit/${row.id}`}>
+                  <button className={classes.edit}>Edit</button>
+                </Link>
+              )}
+            </div>
+            {row.comments && (
+              <div className={classes.icon}>
+                <MailOutlined
+                  style={{ color: '#005a8e' }}
+                  onClick={() => setComment(row.comments)}
+                />
+              </div>
             )}
           </div>
         );
@@ -213,7 +229,7 @@ export default function Surveys({ user }) {
       {error && (
         <Notification
           message={error}
-          type='error'
+          status='error'
           onClose={() => setError(null)}
         />
       )}
@@ -223,7 +239,7 @@ export default function Surveys({ user }) {
       <div style={{ margin: '1rem 0px' }}>
         <Table
           columns={columns}
-          dataSource={versions}
+          dataSource={[...versions]}
           loading={loading}
           size='small'
           locale={{
@@ -231,8 +247,22 @@ export default function Surveys({ user }) {
           }}
           bordered
           pagination={versions.length > 15 ? { pageSize: 15 } : false}
+          rowClassName={record => {
+            if (record.status === 'REJECTED') return classes.delete;
+          }}
         />
       </div>
+      <ModalItem
+        type='info'
+        title='Comments'
+        visible={comment}
+        footer={null}
+        onCancel={() => setComment('')}
+      >
+        <div>
+          <p>{comment}</p>
+        </div>
+      </ModalItem>
     </Card>
   );
 }
