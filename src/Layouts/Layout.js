@@ -1,29 +1,29 @@
-import React from 'react';
-import { Link, Routes, Route } from 'react-router-dom';
-import { Menu, MenuItem } from '@dhis2/ui';
-import classes from '../App.module.css';
-import Surveys from '../Pages/Surveys';
-import NewResponse from '../Pages/NewResponse';
-import { getOrgUnit } from '../api/api';
+import React from "react";
+import { Link, Routes, Route } from "react-router-dom";
+import { Menu, MenuItem } from "@dhis2/ui";
+import classes from "../App.module.css";
+import Surveys from "../Pages/Surveys";
+import NewResponse from "../Pages/NewResponse";
+import { getOrgUnit } from "../api/api";
 
 export default function Layout({ user }) {
   return (
     <main
       style={{
-        display: 'flex',
-        minHeight: 'calc(100vh - 48px)',
-        height: '100%',
+        display: "flex",
+        minHeight: "calc(100vh - 48px)",
+        height: "100%",
       }}
     >
       <aside className={classes.sidebar}>
         <Menu>
-          <Link to='/' className={classes.sidebarHeader}>
-            <MenuItem label='Dashboard' />
+          <Link to="/" className={classes.sidebarHeader}>
+            <MenuItem label="Dashboard" />
           </Link>
 
           <p
             style={{
-              background: '#005A8E46',
+              background: "#005A8E46",
               margin: 0,
               padding: 16,
               marginBottom: 0,
@@ -34,16 +34,16 @@ export default function Layout({ user }) {
             Data Entry Menu
           </p>
 
-          <Link to='/'>
-            <MenuItem label='My Submissions' />
+          <Link to="/">
+            <MenuItem label="My Submissions" />
           </Link>
-          <Link to='/create'>
-            <MenuItem label='Enter Data' />
+          <Link to="/create">
+            <MenuItem label="Enter Data" />
           </Link>
 
           <p
             style={{
-              background: '#005A8E46',
+              background: "#005A8E46",
               margin: 0,
               padding: 16,
               marginBottom: 0,
@@ -54,7 +54,7 @@ export default function Layout({ user }) {
           >
             Organization Unit
           </p>
-          {user?.me?.organisationUnits?.map(orgUnit => (
+          {user?.me?.organisationUnits?.map((orgUnit) => (
             <div key={orgUnit.name} className={classes.active}>
               <MenuItem label={orgUnit.name} />
             </div>
@@ -63,17 +63,19 @@ export default function Layout({ user }) {
       </aside>
       <section
         style={{
-          backgroundColor: '#F4F6F8',
+          backgroundColor: "#F4F6F8",
           flexGrow: 1,
           padding: 20,
+          marginLeft: "270px",
+
         }}
       >
         <Routes>
-          <Route path='/' element={<Surveys user={user} />} />
-          <Route path='/create' element={<NewResponse user={user} />} />
-          <Route path='/view/:id' element={<NewResponse user={user} />} />
-          <Route path='/edit/:id' element={<NewResponse user={user} />} />
-          <Route path='/*' element={<Surveys user={user} />} />
+          <Route path="/" element={<Surveys user={user} />} />
+          <Route path="/create" element={<NewResponse user={user} />} />
+          <Route path="/view/:id" element={<NewResponse user={user} />} />
+          <Route path="/edit/:id" element={<NewResponse user={user} />} />
+          <Route path="/*" element={<Surveys user={user} />} />
         </Routes>
       </section>
     </main>
