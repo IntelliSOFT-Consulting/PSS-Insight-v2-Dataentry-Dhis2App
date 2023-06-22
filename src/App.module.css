@@ -80,7 +80,6 @@
   flex-grow: 0;
   width: 366;
   height: '100%';
-  position: fixed;
 }
 
 .sidebar a {
@@ -90,6 +89,7 @@
 .card {
   height: fit-content !important;
   width: 100%;
+  display: flex;
 }
 
 .cardTitle {
@@ -217,4 +217,3 @@ span[data-test='dhis2-uicore-field-label-required'] {
     width: 90%;
   }
 }
-
