@@ -57,7 +57,6 @@ const useStyles = createUseStyles({
     color: 'white',
     backgroundColor: 'rgb(187, 12, 47)',
     '&:hover': {
-
       color: 'black !important',
       backgroundColor: 'rgb(187, 12, 47) !important',
     },
@@ -200,7 +199,8 @@ export default function Surveys({ user }) {
       ...getColumnSearchProps('status'),
       sorter: (a, b) => a.status.length - b.status.length,
       sortDirections: ['descend', 'ascend'],
-      render: (_, row) => row.status?.capitalize()?.replace('Revised', 'Revise'),
+      render: (_, row) =>
+        row.status?.capitalize()?.replace('Revised', 'Revise'),
     },
     {
       title: 'ACTIONS',
