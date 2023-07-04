@@ -53,6 +53,15 @@ const useStyles = createUseStyles({
     fontWeight: 'bold',
     cursor: 'pointer',
   },
+  danger: {
+    color: 'white',
+    backgroundColor: 'rgb(187, 12, 47)',
+    '&:hover': {
+
+      color: 'black !important',
+      backgroundColor: 'rgb(187, 12, 47) !important',
+    },
+  },
 });
 
 export default function Surveys({ user }) {
@@ -204,11 +213,12 @@ export default function Surveys({ user }) {
               <Link to={`/view/${row.id}`}>
                 <button className={classes.edit}>View</button>
               </Link>
-              {row.status === 'DRAFT' && (
-                <Link to={`/edit/${row.id}`}>
-                  <button className={classes.edit}>Edit</button>
-                </Link>
-              )}
+              {row.status === 'DRAFT' ||
+                (row.status === 'REVISED' && (
+                  <Link to={`/edit/${row.id}`}>
+                    <button className={classes.edit}>Edit</button>
+                  </Link>
+                ))}
             </div>
             {row.comments && (
               <div className={classes.icon}>
@@ -249,6 +259,7 @@ export default function Surveys({ user }) {
           pagination={versions.length > 15 ? { pageSize: 15 } : false}
           rowClassName={record => {
             if (record.status === 'REJECTED') return classes.delete;
+            if (record.status === 'REVISED') return classes.danger;
           }}
         />
       </div>

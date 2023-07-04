@@ -97,7 +97,7 @@ export default function NewResponse({ user }) {
 
   const isView =
     loadingSurvey ||
-    window.location.href.includes('view') ||
+    window.location.href.includes('view') || 
     (id && formik.values.isPublished);
   const loadResponse = async () => {
     try {
