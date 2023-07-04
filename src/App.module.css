@@ -80,6 +80,7 @@
   flex-grow: 0;
   width: 366;
   height: '100%';
+  position: fixed;
 }
 
 .sidebar a {
