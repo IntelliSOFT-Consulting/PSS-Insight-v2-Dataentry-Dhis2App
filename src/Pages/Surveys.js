@@ -200,7 +200,7 @@ export default function Surveys({ user }) {
       ...getColumnSearchProps('status'),
       sorter: (a, b) => a.status.length - b.status.length,
       sortDirections: ['descend', 'ascend'],
-      render: (_, row) => row.status?.capitalize(),
+      render: (_, row) => row.status?.capitalize()?.replace('Revised', 'Revise'),
     },
     {
       title: 'ACTIONS',
