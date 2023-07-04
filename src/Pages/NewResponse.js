@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
-import { Select, Button } from 'antd';
+import { Select, Button, Form } from 'antd';
 import {
   saveResponse,
   getSurvey,
@@ -97,7 +97,7 @@ export default function NewResponse({ user }) {
 
   const isView =
     loadingSurvey ||
-    window.location.href.includes('view') || 
+    window.location.href.includes('view') ||
     (id && formik.values.isPublished);
   const loadResponse = async () => {
     try {
@@ -244,32 +244,44 @@ export default function NewResponse({ user }) {
           onClose={() => setError(false)}
         />
       )}
-      <form className={classes.formGrid}>
+      <Form className={classes.formGrid} layout='vertical'>
         <div className={styles.formItem}>
-          <Select
+          <Form.Item
+            label='Data Entry Period'
             name='selectedPeriod'
-            placeholder='Select year'
-            label='Period'
-            id='selectedPeriod'
-            options={years}
-            disabled={isView}
-            style={{ width: '100%' }}
-            value={formik.values.selectedPeriod}
-            onChange={value => formik.setFieldValue('selectedPeriod', value)}
-            size='large'
-            status={
-              formik.touched.selectedPeriod && formik.errors.selectedPeriod
-                ? 'error'
-                : null
-            }
-          />
+            className={styles.formItem}
+            rules={[
+              {
+                required: true,
+                message: 'Please select a year',
+              },
+            ]}
+          >
+            <Select
+              name='selectedPeriod'
+              placeholder='Select year'
+              label='Period'
+              id='selectedPeriod'
+              options={years}
+              disabled={isView}
+              style={{ width: '100%' }}
+              value={formik.values.selectedPeriod}
+              onChange={value => formik.setFieldValue('selectedPeriod', value)}
+              size='large'
+              status={
+                formik.touched.selectedPeriod && formik.errors.selectedPeriod
+                  ? 'error'
+                  : null
+              }
+            />
+          </Form.Item>
           {formik.touched.selectedPeriod && formik.errors.selectedPeriod && (
             <div className={styles.errorText}>
               {formik.errors.selectedPeriod}
             </div>
           )}
         </div>
-      </form>
+      </Form>
       <div className={classes.indicatorsSelect}>
         {loadingSurvey ? (
           <Loading />
