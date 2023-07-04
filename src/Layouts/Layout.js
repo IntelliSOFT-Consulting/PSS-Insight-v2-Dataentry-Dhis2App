@@ -1,10 +1,10 @@
-import React from "react";
-import { Link, Routes, Route } from "react-router-dom";
-import { Menu, MenuItem } from "@dhis2/ui";
-import classes from "../App.module.css";
-import Surveys from "../Pages/Surveys";
-import NewResponse from "../Pages/NewResponse";
-import { getOrgUnit } from "../api/api";
+import React from 'react';
+import { Link, Routes, Route } from 'react-router-dom';
+import { Menu, MenuItem } from '@dhis2/ui';
+import classes from '../App.module.css';
+import Surveys from '../Pages/Surveys';
+import NewResponse from '../Pages/NewResponse';
+import { getOrgUnit } from '../api/api';
 
 export default function Layout({ user }) {
   return (
@@ -18,7 +18,9 @@ export default function Layout({ user }) {
       <aside className={classes.sidebar}>
         <Menu>
           <Link to='/' className={classes.sidebarHeader}>
-            <MenuItem label={`Dashboard (${user?.me?.organisationUnits[0]?.name})`} />
+            <MenuItem
+              label={`Dashboard (${user?.me?.organisationUnits[0]?.name})`}
+            />
           </Link>
 
           <p
@@ -40,25 +42,6 @@ export default function Layout({ user }) {
           <Link to='/create'>
             <MenuItem label='Enter Data' />
           </Link>
-
-          <p
-            style={{
-              background: '#005A8E46',
-              margin: 0,
-              padding: 16,
-              marginBottom: 0,
-              fontSize: 14,
-              width: 270,
-              marginTop: 16,
-            }}
-          >
-            Organization Unit
-          </p>
-          {user?.me?.organisationUnits?.map(orgUnit => (
-            <div key={orgUnit.name} className={classes.active}>
-              <MenuItem label={orgUnit.name} />
-            </div>
-          ))}
         </Menu>
       </aside>
       <section
