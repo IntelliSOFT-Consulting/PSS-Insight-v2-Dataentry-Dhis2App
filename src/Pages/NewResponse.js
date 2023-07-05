@@ -64,7 +64,9 @@ export default function NewResponse({ user }) {
           selectedPeriod: values.selectedPeriod,
           dataEntryPersonId: user?.me?.id,
           dataEntryDate: new Date(),
-          responses,
+          responses: responses?.filter(
+            item => item?.response !== null && item.response !== undefined
+          ),
           isPublished: values.isPublished,
           dataEntryPerson: {
             id: user?.me?.id,
