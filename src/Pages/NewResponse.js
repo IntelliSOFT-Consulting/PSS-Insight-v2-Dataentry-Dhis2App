@@ -136,13 +136,19 @@ export default function NewResponse({ user }) {
 
   const loadSurvey = async () => {
     try {
-      formik.resetForm();
-      setResponses([]);
       setLoadingSurvey(true);
-      const response = await getSurvey();
-      const groupedData = groupQuestions(response?.details);
-      setReferenceSheet(response?.referenceSheet);
-      setSurvey(groupedData);
+      if (!id) {
+        formik.resetForm();
+        setResponses([]);
+        const response = await getSurvey();
+        const groupedData = groupQuestions(response?.details);
+        setReferenceSheet(response?.referenceSheet);
+        setSurvey(groupedData);
+      } else {
+        const response = await getSurvey();
+        setReferenceSheet(response?.referenceSheet);
+      }
+
       setLoadingSurvey(false);
     } catch (error) {
       setError('Error loading survey');
@@ -151,9 +157,7 @@ export default function NewResponse({ user }) {
   };
 
   useEffect(() => {
-    if (!id) {
-      loadSurvey();
-    }
+    loadSurvey();
   }, [id]);
 
   const styles = useStyles();
