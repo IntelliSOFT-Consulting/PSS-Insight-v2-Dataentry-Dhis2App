@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://172.104.91.99:7001/api/v1',
+  baseURL: `${process.env.REACT_APP_NATIONAL_URL}/api/v1`,
 });
 
 export const saveResponse = async datas => {
@@ -30,14 +30,11 @@ export const getResponseDetails = async id => {
 };
 
 export const attachFile = async file => {
-  const { data } = await api.post(
-    '/file/upload',
-    file
-  );
+  const { data } = await api.post('/file/upload', file);
   return data;
 };
 
-export const updateResponse= async (id, data) => {
+export const updateResponse = async (id, data) => {
   const { data: response } = await api.put(`/data-entry/response/${id}`, data);
   return response;
-}
+};
